@@ -13,6 +13,23 @@
 int main(int argc, char *argv[]) {
   QApplication app(argc, argv);
 
+  /**
+   * --c-highlight
+   * --c-highlight-disabled
+   * --c-highlight-menu
+   * 
+   * --c-base
+   * --c-separator
+   * 
+   * --c-success
+   * --c-warning
+   * --c-error
+   * 
+   * --c-text
+   * --c-text-disabled
+   * --c-text-active
+  */
+
   QMainWindow mainWindow;
   mainWindow.setWindowTitle("QSS Controller");
 
