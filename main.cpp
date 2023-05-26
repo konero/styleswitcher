@@ -1,68 +1,75 @@
-#include <QApplication>
-#include <QMainWindow>
-#include <QFile>
-#include <QVBoxLayout>
 #include "theme.h"
-
-/**
- * Color Variables
- * 
- * primary (main background)
- * secondary (darker, eg. titlebars)
- * tertiary (borders)
- * 
- * highlight (main)
- * highlight-content (eg. text, icon)
-*/
+#include <QApplication>
+#include <QColor>
+#include <QFile>
+#include <QMainWindow>
+#include <QObject>
+#include <QPushButton>
+#include <QSettings>
+#include <QString>
+#include <QTextEdit>
+#include <QVBoxLayout>
 
 int main(int argc, char *argv[]) {
-    QApplication app(argc, argv);
+  QApplication app(argc, argv);
 
-    // Create the main window
-    QMainWindow mainWindow;
-    mainWindow.setWindowTitle("QSS Controller");
+  QMainWindow mainWindow;
+  mainWindow.setWindowTitle("QSS Controller");
 
-    // Create a ColorPickerWidget
-    ColorPickerWidget* colorPicker = new ColorPickerWidget();
+  // Create a ColorPickerWidget
+  ColorPickerWidget *colorPicker = new ColorPickerWidget();
 
-    QObject::connect(colorPicker, &ColorPickerWidget::colorChanged, [&](const QColor& color){
-        // Load the stylesheet from a .qss file
-        QFile styleFile(":/styles/style.qss");
-        if (styleFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            QString styleSheet = QString::fromUtf8(styleFile.readAll());
-            styleFile.close();
+  // Create the text editor
+  QTextEdit *customQssTextEdit = new QTextEdit();
 
-            /**
-             * Eg. we can conditionally check the brightness value of color when it
-             * is a dependency to make sure contents that go inside are visible. If
-             * color is bright we'll move the inner color dark, and vice versa.
-            */
+  // Create the Apply button
+  QPushButton *applyButton = new QPushButton("Apply");
 
-            // Replace placeholder var with slider value
-            QString colorValue = QString("rgb(%1, %2, %3)")
-                .arg(color.red())
-                .arg(color.green())
-                .arg(color.blue());
-            styleSheet.replace("@@var@@", colorValue);
+  // Create QSettings
+  QSettings settings("config.ini", QSettings::IniFormat);
+  QColor savedColor = settings.value("sliderColor", QColor()).value<QColor>();
+  colorPicker->setColor(savedColor);
 
-            // Apply modified stylesheet
-            app.setStyleSheet(styleSheet);
-        }
-    });
+  // Slot to apply stylesheet changes
+  QObject::connect(applyButton, &QPushButton::clicked, [&]() {
+    // Load the stylesheet from a .qss file
+    QFile styleFile(":/styles/style.qss");
+    if (styleFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      QString styleSheet = QString::fromUtf8(styleFile.readAll());
+      styleFile.close();
 
-    // Create the central widget and layout
-    QWidget *centralWidget = new QWidget(&mainWindow);
-    QVBoxLayout *layout = new QVBoxLayout(centralWidget);
+      // Replace placeholder var with slider value
+      QColor color = colorPicker->getColor();
+      QString colorValue = QString("rgb(%1, %2, %3)")
+                               .arg(color.red())
+                               .arg(color.green())
+                               .arg(color.blue());
+      styleSheet.replace("--var", colorValue);
 
-    // Add the colorPicker to the layout
-    layout->addWidget(colorPicker);
+      // Check if text edit box is not empty
+      if (!customQssTextEdit->toPlainText().isEmpty()) {
+        // Concatenate custom QSS style
+        styleSheet += customQssTextEdit->toPlainText();
+      }
 
-    // Set the central widget of the main window
-    mainWindow.setCentralWidget(centralWidget);
+      // Apply modified stylesheet
+      app.setStyleSheet(styleSheet);
 
-    // Show the main window
-    mainWindow.show();
+      // Save the color to QSettings
+      settings.setValue("sliderColor", color);
+    }
+  });
 
-    // Enter the event loop
-    return app.exec();
+  // Create the central widget and layout
+  QWidget *centralWidget = new QWidget(&mainWindow);
+  QVBoxLayout *layout = new QVBoxLayout(centralWidget);
+
+  layout->addWidget(colorPicker);
+  layout->addWidget(customQssTextEdit);
+  layout->addWidget(applyButton);
+
+  mainWindow.setCentralWidget(centralWidget);
+  mainWindow.show();
+
+  return app.exec();
 }

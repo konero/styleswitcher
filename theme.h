@@ -1,62 +1,65 @@
-#include <QWidget>
-#include <QSlider>
-#include <QHBoxLayout>
 #include <QColor>
+#include <QHBoxLayout>
+#include <QSlider>
+#include <QWidget>
 
-class ColorPickerWidget : public QWidget
-{
-    Q_OBJECT
+class ColorPickerWidget : public QWidget {
+  Q_OBJECT
 
 public:
-    ColorPickerWidget(QWidget* parent = nullptr)
-        : QWidget(parent)
-    {
-        // Create sliders
-        redSlider = createSlider();
-        greenSlider = createSlider();
-        blueSlider = createSlider();
+  ColorPickerWidget(QWidget *parent = nullptr) : QWidget(parent) {
+    // Create sliders
+    redSlider = createSlider();
+    greenSlider = createSlider();
+    blueSlider = createSlider();
 
-        // Set layout
-        QHBoxLayout* layout = new QHBoxLayout(this);
-        layout->addWidget(redSlider);
-        layout->addWidget(greenSlider);
-        layout->addWidget(blueSlider);
+    // Set layout
+    QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->addWidget(redSlider);
+    layout->addWidget(greenSlider);
+    layout->addWidget(blueSlider);
 
-        // Connect slider signals
-        connect(redSlider, &QSlider::valueChanged, this, &ColorPickerWidget::onColorSliderChanged);
-        connect(greenSlider, &QSlider::valueChanged, this, &ColorPickerWidget::onColorSliderChanged);
-        connect(blueSlider, &QSlider::valueChanged, this, &ColorPickerWidget::onColorSliderChanged);
-    }
+    // Connect slider signals
+    connect(redSlider, &QSlider::valueChanged, this,
+            &ColorPickerWidget::onColorSliderChanged);
+    connect(greenSlider, &QSlider::valueChanged, this,
+            &ColorPickerWidget::onColorSliderChanged);
+    connect(blueSlider, &QSlider::valueChanged, this,
+            &ColorPickerWidget::onColorSliderChanged);
+  }
 
-    QColor getColor() const
-    {
-        int redValue = redSlider->value();
-        int greenValue = greenSlider->value();
-        int blueValue = blueSlider->value();
+  QColor getColor() const {
+    int redValue = redSlider->value();
+    int greenValue = greenSlider->value();
+    int blueValue = blueSlider->value();
 
-        return QColor(redValue, greenValue, blueValue);
-    }
+    return QColor(redValue, greenValue, blueValue);
+  }
+
+  void setColor(const QColor &color) {
+    redSlider->setValue(color.red());
+    greenSlider->setValue(color.green());
+    blueSlider->setValue(color.blue());
+  }
 
 signals:
-    void colorChanged(const QColor& color);
+  void colorChanged(const QColor &color);
 
 private slots:
-    void onColorSliderChanged()
-    {
-        QColor color = getColor();
-        emit colorChanged(color);
-    }
+  void onColorSliderChanged() {
+    QColor color = getColor();
+    emit colorChanged(color);
+  }
 
 private:
-    QSlider* createSlider()
-    {
-        QSlider* slider = new QSlider(Qt::Horizontal);
-        slider->setMinimum(0);
-        slider->setMaximum(255);
-        return slider;
-    }
+  QSlider *createSlider() {
+    QSlider *slider = new QSlider(Qt::Horizontal);
+    slider->setMinimum(0);
+    slider->setMaximum(255);
+    return slider;
+  }
 
-    QSlider* redSlider;
-    QSlider* greenSlider;
-    QSlider* blueSlider;
+  QSlider *redSlider;
+  QSlider *greenSlider;
+  QSlider *blueSlider;
 };
